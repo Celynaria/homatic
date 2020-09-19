@@ -1,12 +1,18 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os"
 )
+
+type Pair struct {
+	DeviceID int
+	UserID   int
+}
 
 func main() {
 	fmt.Println("hello hometic : I'm Gopher!!")
@@ -26,5 +32,8 @@ func main() {
 }
 
 func pairDeviceHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(`{"status":"active"}`))
+	pair := new(Pair)
+	_ = json.NewDecoder(r.Body).Decode(pair)
+	marshal, _ := json.Marshal(pair)
+	w.Write(marshal)
 }
