@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -32,8 +33,29 @@ func main() {
 }
 
 func pairDeviceHandler(w http.ResponseWriter, r *http.Request) {
+	db, err := sql.Open("postgres", "DATABASE_URL")
+	if err != nil {
+		log.Fatal("connect to database error", err)
+	}
+	defer db.Close()
+
 	pair := new(Pair)
-	_ = json.NewDecoder(r.Body).Decode(pair)
-	marshal, _ := json.Marshal(pair)
-	w.Write(marshal)
+	err = json.NewDecoder(r.Body).Decode(pair)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err.Error())
+		return
+	}
+
+	defer r.Body.Close()
+
+	insetQuery := `INSERT INTO pairs VALUES ($1,$2);`
+	_, err = db.Exec(insetQuery, pair.DeviceID, pair.UserID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err.Error())
+		return
+	}
+
+	w.Write([]byte(`{"status":"active"}`))
 }
