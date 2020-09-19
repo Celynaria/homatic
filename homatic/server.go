@@ -17,7 +17,7 @@ func main() {
 	fmt.Println("addr:", addr)
 
 	server := http.Server{
-		Addr:    "127.0.0.1:2009",
+		Addr:    addr,
 		Handler: r,
 	}
 
