@@ -19,7 +19,7 @@ type Pair struct {
 func main() {
 	fmt.Println("hello hometic : I'm Gopher!!")
 	r := mux.NewRouter()
-	r.HandleFunc("/pair-device", pairDeviceHandler).Methods(http.MethodPost)
+	r.Handle("/pair-device", PairDevice(createPairDevice{})).Methods(http.MethodPost)
 
 	addr := fmt.Sprintf("0.0.0.0:%s", os.Getenv("PORT"))
 	fmt.Println("addr:", addr)
@@ -33,30 +33,43 @@ func main() {
 	log.Fatal(server.ListenAndServe())
 }
 
-func pairDeviceHandler(w http.ResponseWriter, r *http.Request) {
+func PairDevice(device Device) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var pair Pair
+		err := json.NewDecoder(r.Body).Decode(pair)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(err.Error())
+			return
+		}
+		defer r.Body.Close()
+		err = device.Pair(pair)
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(err.Error())
+			return
+		}
+
+		w.Write([]byte(`{"status":"active"}`))
+	}
+}
+
+type Device interface {
+	Pair(p Pair) error
+}
+
+type createPairDevice struct{}
+
+func (createPairDevice) Pair(pair Pair) error {
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal("connect to database error", err)
 	}
 	defer db.Close()
 
-	pair := new(Pair)
-	err = json.NewDecoder(r.Body).Decode(pair)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(err.Error())
-		return
-	}
-
-	defer r.Body.Close()
-
 	insetQuery := `INSERT INTO pairs VALUES ($1,$2);`
 	_, err = db.Exec(insetQuery, pair.DeviceID, pair.UserID)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err.Error())
-		return
-	}
 
-	w.Write([]byte(`{"status":"active"}`))
+	return err
 }
