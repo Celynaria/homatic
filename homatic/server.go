@@ -34,7 +34,7 @@ func main() {
 }
 
 func pairDeviceHandler(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("postgres", "DATABASE_URL")
+	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal("connect to database error", err)
 	}
