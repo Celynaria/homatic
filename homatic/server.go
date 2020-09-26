@@ -38,6 +38,13 @@ func (w *JSONResponseWriter) JSON(statusCode int, data interface{}) {
 }
 
 func main() {
+	err := run()
+	if err != nil {
+		log.Fatal("can't start application", err)
+	}
+}
+
+func run() error {
 	fmt.Println("hello hometic : I'm Gopher!!")
 
 	r := mux.NewRouter()
@@ -53,7 +60,7 @@ func main() {
 	}
 
 	log.Println("starting...")
-	log.Fatal(server.ListenAndServe())
+	return server.ListenAndServe()
 }
 
 func PairDevice(device Device) CustomHandlerFunc {
