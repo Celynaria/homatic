@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/Celynaria/Homatic/homatic/logger"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
@@ -22,16 +23,7 @@ func main() {
 	fmt.Println("hello hometic : I'm Gopher!!")
 
 	r := mux.NewRouter()
-	r.Use(func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			l := zap.NewExample()
-			l = l.With(zap.Namespace("homatic"), zap.String("I'm", "gopher"))
-
-			c := context.WithValue(r.Context(), "logger", l)
-			newR := r.WithContext(c)
-			next.ServeHTTP(w, newR)
-		})
-	})
+	r.Use(logger.MiddleWare)
 	r.Handle("/pair-device", PairDevice(CreatePairDeviceFunc(createPairDevice))).Methods(http.MethodPost)
 
 	addr := fmt.Sprintf("0.0.0.0:%s", os.Getenv("PORT"))
@@ -48,7 +40,8 @@ func main() {
 
 func PairDevice(device Device) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		l := r.Context().Value("logger").(zap.Logger)
+		i := r.Context().Value("logger")
+		l := i.(*zap.Logger)
 		l.Info("pair-device")
 
 		var pair Pair
