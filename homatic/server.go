@@ -1,14 +1,12 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/Celynaria/Homatic/homatic/logger"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
-	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"os"
@@ -40,8 +38,7 @@ func main() {
 
 func PairDevice(device Device) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		i := r.Context().Value("logger")
-		l := i.(*zap.Logger)
+		l := logger.GetLog(r.Context())
 		l.Info("pair-device")
 
 		var pair Pair

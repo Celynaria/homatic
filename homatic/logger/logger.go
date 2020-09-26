@@ -16,7 +16,7 @@ func MiddleWare(next http.Handler) http.Handler {
 	})
 }
 
-func L(ctx context.Context) *zap.Logger {
+func GetLog(ctx context.Context) *zap.Logger {
 	value := ctx.Value("logger")
 	if value == nil {
 		return zap.NewExample()
