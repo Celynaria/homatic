@@ -12,7 +12,7 @@ import (
 func TestCreatePairDevice(t *testing.T) {
 
 	payload := new(bytes.Buffer)
-	json.NewEncoder(payload).Encode(Pair{DeviceID: 1234, UserID: 4433})
+	_ = json.NewEncoder(payload).Encode(Pair{DeviceID: 1234, UserID: 4433})
 	req := httptest.NewRequest(http.MethodPost, "/pair-device", payload)
 	rec := httptest.NewRecorder()
 

@@ -62,8 +62,9 @@ func PairDevice(device Device) CustomHandlerFunc {
 		l.Info("pair-device")
 
 		var pair Pair
-		err := json.NewDecoder(r.Body).Decode(pair)
+		err := json.NewDecoder(r.Body).Decode(&pair)
 		if err != nil {
+			l.Error(err.Error())
 			w.JSON(http.StatusBadRequest, err.Error())
 			return
 		}
@@ -71,6 +72,7 @@ func PairDevice(device Device) CustomHandlerFunc {
 		err = device.Pair(pair)
 
 		if err != nil {
+			l.Error(err.Error())
 			w.JSON(http.StatusBadRequest, err.Error())
 			return
 		}
